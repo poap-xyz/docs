@@ -1,0 +1,140 @@
+---
+title: "Create an account and organization"
+description: "Create an OCF Core account, authenticate with the API, and create your first organization."
+---
+
+An organization is the entity that issues collectibles and tokens. Before you can create collectibles, you need an account and at least one organization.
+
+## Before you begin
+
+You will need:
+
+- Access to the OCF Core developer environment
+- A browser for authentication
+- An HTTP client, such as cURL, Postman, or your application backend
+- An access token for authenticated API requests
+
+The examples in this guide use the OCF Core development API:
+
+```bash
+https://dev-api.collectiblesfoundry.com
+```
+
+## Step 1: Create your account
+
+Open the OCF Core authentication page:
+
+```text
+https://ocf-dev-enterprise.us.auth0.com
+```
+
+Create an account or sign in with an existing account.
+
+After signing in, authorize OCF Core to access your profile information. Once authorization is complete, you will receive an access token that can be used to make authenticated API requests.
+
+Use this token in the `Authorization` header:
+
+```bash
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+<Warning>
+  Keep your access token private. Do not expose it in public repositories, frontend code, logs, or shared screenshots.
+</Warning>
+
+## Step 2: Create an organization
+
+Create an organization by sending a `POST` request to `/organizations`.
+
+```bash
+curl -X POST https://dev-api.collectiblesfoundry.com/organizations \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Species Spotting Society",
+    "slug": "species-spotting-society",
+    "description": "A species spotting organization",
+    "logoUrl": "https://example.com/logo.jpg",
+    "websiteUrl": "https://species-spotting-society.example.com"
+  }'
+```
+
+### Request body
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `name` | Yes | The display name of the organization. |
+| `slug` | Yes | A URL-friendly identifier for the organization. The slug cannot be changed later. |
+| `description` | No | A short description of the organization. |
+| `logoUrl` | No | A public URL for the organization logo. |
+| `websiteUrl` | No | The organization's website URL. |
+
+## Step 3: Save the organization response
+
+A successful request returns the organization details.
+
+```json
+{
+  "id": "org_123",
+  "name": "Species Spotting Society",
+  "slug": "species-spotting-society",
+  "description": "A species spotting organization",
+  "logoUrl": "https://example.com/logo.jpg",
+  "websiteUrl": "https://species-spotting-society.example.com",
+  "orgSecret": "YOUR_ORG_SECRET"
+}
+```
+
+Save the organization `id`. You will use it when creating collectibles and issuing tokens.
+
+Also save the `orgSecret`. The `orgSecret` is used to verify collector identities when issuing tokens.
+
+<Warning>
+  Treat the `orgSecret` like a password:
+
+  - Store it securely
+  - Use it only from trusted backend environments
+  - Do not expose it in frontend code
+  - Do not commit it to source control
+  - Rotate it if you believe it has been exposed
+</Warning>
+
+## Optional: Use an AI agent with MCP
+
+OCF Core also exposes an MCP server that allows compatible AI agents to interact with platform capabilities.
+
+Use the OCF Core MCP server:
+
+```text
+https://dev-api.collectiblesfoundry.com/mcp
+```
+
+You can ask your agent:
+
+```text
+I want to set up an account on OCF Core. The MCP server is at https://dev-api.collectiblesfoundry.com/mcp.
+```
+
+The agent may authenticate using either Device Code or PKCE, depending on the client.
+
+### Device Code flow
+
+The agent will provide a browser URL similar to:
+
+```text
+https://ocf-dev-enterprise.us.auth0.com/activate?user_code=XXXX-XXXX
+```
+
+Open the URL, sign in or create an account, and authorize the device.
+
+Once authorization is complete, return to the agent and confirm that you are done. The agent can then continue with your authenticated session.
+
+### PKCE flow
+
+In clients that support PKCE, the agent may open an authorization page in your browser.
+
+After you sign in and authorize the application, the browser redirects to a local address. The agent captures the redirect, exchanges the authorization code for tokens, and continues the session.
+
+## Next step
+
+Create collectibles and issue tokens

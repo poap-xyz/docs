@@ -12,6 +12,7 @@
     "pages": [
       "index",
       "quickstart",
+      "create-account-and-organization",
       "create-collectibles-and-issue-tokens"
     ],
     "global": {
