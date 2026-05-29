@@ -1,0 +1,295 @@
+---
+title: "Create collectibles and issue tokens"
+description: "This guide walks you through creating a collectible and issuing it to one or more collectors."
+---
+
+By the end, you will have:
+
+1. Created an optional metadata schema
+2. Created a collectible under your organization
+3. Computed an identity token for a collector
+4. Issued the collectible as a token
+
+## Before you begin
+
+You will need:
+
+- An OCF Core account
+- An access token
+- An organization ID
+- Your organization secret, `orgSecret`
+
+The examples in this guide use the OCF Core development API:
+
+```bash
+https://dev-api.collectiblesfoundry.com
+```
+
+<Note>
+  The examples use cURL so each request is visible. For production integrations, use the official OCF SDK where possible. The SDK stays aligned with the latest API definition and handles identity token and organization secret flows for you.
+</Note>
+
+OCF also provides:
+
+- OpenAPI definition: `https://dev-api.collectiblesfoundry.com/api-json`
+- API reference UI: `https://dev-api.collectiblesfoundry.com/api`
+
+## Step 1: Optional — create a metadata schema
+
+A schema defines the shape of the metadata attached to a collectible or token.
+
+Schemas are optional. If you provide one, OCF validates matching metadata objects when they are written.
+
+OCF schemas use JTD, defined in [RFC 8927](https://datatracker.ietf.org/doc/html/rfc8927).
+
+Create a schema:
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/schemas \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Bird Sighting",
+    "organizationId": "YOUR_ORGANIZATION_ID",
+    "definition": {
+      "properties": {
+        "species": { "type": "string" }
+      },
+      "optionalProperties": {
+        "amount": { "type": "uint32" },
+        "date": { "type": "timestamp" }
+      }
+    }
+  }'
+```
+
+Example response:
+
+```json
+{
+  "id": "s1a2b3c4-...",
+  "name": "Bird Sighting",
+  "version": "1.0.0",
+  "organizationId": "YOUR_ORGANIZATION_ID",
+  "definition": {
+    "properties": {
+      "species": { "type": "string" }
+    },
+    "optionalProperties": {
+      "amount": { "type": "uint32" },
+      "date": { "type": "timestamp" }
+    }
+  },
+  "createdAt": "2026-05-18T12:00:00.000Z"
+}
+```
+
+Save the collectible `id`. You will use it when issuing tokens.
+
+### Collectible fields
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `name` | Yes | The display name of the collectible. |
+| `issuedByOrgId` | Yes | The organization creating the collectible. |
+| `description` | No | A short description of the collectible. |
+| `image` | No | An image file for the collectible. |
+| `metadata` | No | Metadata attached to the collectible. |
+| `externalId` | No | Your own external identifier for the collectible. |
+| `schemaId` | No | A schema used to validate collectible metadata. |
+| `tokenSchemaId` | No | A schema used to validate token-level metadata. |
+
+## Step 3: Compute an identity token
+
+Before issuing a token to a collector, compute an identity token for that collector.
+
+The identity token is an HMAC-SHA256 digest of the collector's email address, keyed with your organization's `orgSecret`.
+
+<Warning>
+  Keep your `orgSecret` private. Only use it in trusted backend environments.
+</Warning>
+
+This lets OCF verify that the collector belongs to your organization without requiring you to send the collector's email address in plaintext.
+
+<CodeGroup>
+
+```bash Shell
+echo -n "collector@example.com" \
+  | openssl dgst -sha256 -hmac "YOUR_ORG_SECRET" -hex \
+  | awk '{print $2}'
+```
+
+```python Python
+import hmac
+import hashlib
+
+def identity_token(email: str, org_secret: str) -> str:
+    return hmac.new(
+        org_secret.encode(),
+        email.encode(),
+        hashlib.sha256
+    ).hexdigest()
+```
+
+```javascript JavaScript
+import crypto from "crypto";
+
+function identityToken(email, orgSecret) {
+  return crypto
+    .createHmac("sha256", orgSecret)
+    .update(email)
+    .digest("hex");
+}
+```
+
+</CodeGroup>
+
+The result is a 64-character hex string.
+
+```text
+a3f1...
+```
+
+## Step 4: Issue a token to one collector
+
+A token is an issued instance of a collectible.
+
+Use `POST /tokens` to issue one collectible to one collector.
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/tokens \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collectibleId": "a1b2c3d4-...",
+    "collectorExternalId": "user-789",
+    "identityToken": "a3f1..."
+  }'
+```
+
+Example response:
+
+```json
+{
+  "id": "tok-0001-...",
+  "collectibleId": "a1b2c3d4-...",
+  "collectorId": "...",
+  "issuedBy": "YOUR_ORGANIZATION_ID",
+  "issuedAt": "2026-05-18T12:05:00.000Z"
+}
+```
+
+### Add token-level metadata
+
+You can attach metadata to the token at issuance time.
+
+For example, the collectible might represent a bird sighting, while the token metadata records when a specific collector made the sighting.
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/tokens \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collectibleId": "a1b2c3d4-...",
+    "collectorExternalId": "user-789",
+    "identityToken": "a3f1...",
+    "metadata": {
+      "date": "2026-05-18T12:05:00.000Z"
+    }
+  }'
+```
+
+If the collectible has a `tokenSchemaId`, OCF validates the token metadata against that schema.
+
+## Step 5: Issue tokens in batches
+
+OCF supports batch issuance for higher-volume use cases.
+
+There are two batch issuance patterns:
+
+1. Issue many collectibles to one collector
+2. Issue many collectibles to many collectors
+
+### Issue many collectibles to one collector
+
+Use `POST /tokens/batch/to-collector` to issue multiple collectibles to a single collector.
+
+Each collectible can include its own token-level metadata.
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/tokens/batch/to-collector \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collector": {
+      "externalId": "user-789",
+      "identityToken": "a3f1..."
+    },
+    "collectibles": [
+      {
+        "id": "a1b2c3d4-...",
+        "metadata": {
+          "date": "2026-05-18T12:05:00.000Z"
+        }
+      },
+      {
+        "id": "e5f6a7b8-..."
+      }
+    ]
+  }'
+```
+
+### Issue many collectibles to many collectors
+
+Use `POST /tokens/batch` to issue every collectible in the request to every collector in the request.
+
+This endpoint supports up to 100 collectible IDs and 100 collectors per request.
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/tokens/batch \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collectibleIds": [
+      "a1b2c3d4-...",
+      "e5f6a7b8-..."
+    ],
+    "collectors": [
+      {
+        "collectorExternalId": "user-789",
+        "identityToken": "a3f1..."
+      },
+      {
+        "collectorExternalId": "user-012",
+        "identityToken": "b7c2..."
+      }
+    ]
+  }'
+```
+
+Example response:
+
+```json
+{
+  "succeeded": [
+    {
+      "collectibleId": "a1b2c3d4-...",
+      "collectorExternalId": "user-789",
+      "tokenId": "tok-0001-..."
+    }
+  ],
+  "failed": [
+    {
+      "collectibleId": "e5f6a7b8-...",
+      "collectorExternalId": "user-012",
+      "error": "..."
+    }
+  ]
+}
+```
+
+Review the `failed` array before retrying a batch request.
+
+## Next step
+
+After issuing tokens, retrieve collectibles and tokens from the API or listen for issuance events through webhooks.

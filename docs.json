@@ -9,7 +9,11 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "pages": ["index", "quickstart"],
+    "pages": [
+      "index",
+      "quickstart",
+      "create-collectibles-and-issue-tokens"
+    ],
     "global": {
       "anchors": [
         {
