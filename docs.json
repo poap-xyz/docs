@@ -1,13 +1,16 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "luma",
   "name": "Collectibles Foundry",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#ED5D03",
+    "light": "#EB8E5C",
+    "dark": "#CE3A21"
   },
-  "favicon": "/favicon.svg",
+  "favicon": {
+    "light": "/images/Favicon.svg",
+    "dark": "/images/Favicon.svg"
+  },
   "navigation": {
     "pages": [
       "index",
@@ -17,8 +20,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/images/ocf-full-light.svg",
+    "dark": "/images/ocf-full-dark.svg"
   },
   "navbar": {
     "links": [],
@@ -40,5 +43,13 @@
      "vscode"
    ]
   },
-  "description": "Open Collectibles Foundry (OCF) is an agent-friendly platform for creating, managing, and (optionally) minting collectibles as NFTs on Solana and Ethereum, created by POAP Inc."
+  "description": "Open Collectibles Foundry (OCF) is an agent-friendly platform for creating, managing, and (optionally) minting collectibles as NFTs on Solana and Ethereum, created by POAP Inc.",
+  "fonts": {
+    "family": "Poppins"
+  },
+  "thumbnails": {
+    "fonts": {
+      "family": "Poppins"
+    }
+  }
 }
