@@ -6,7 +6,7 @@ description: "This guide walks you through creating a collectible and issuing it
 By the end, you will have:
 
 1. Created an optional metadata schema
-2. Created a collectible under your organization
+2. Created a collectible under your project
 3. Computed an identity token for a collector
 4. Issued the collectible as a token
 
@@ -16,8 +16,8 @@ You will need:
 
 - An OCF Core account
 - An access token
-- An organization ID
-- Your organization secret, `orgSecret`
+- A project ID
+- Your project secret, `orgSecret`
 
 The examples in this guide use the OCF Core development API:
 
@@ -26,7 +26,7 @@ https://dev-api.collectiblesfoundry.com
 ```
 
 <Note>
-  The examples use cURL so each request is visible. For production integrations, use the official OCF SDK where possible. The SDK stays aligned with the latest API definition and handles identity token and organization secret flows for you.
+  The examples use cURL so each request is visible. For production integrations, use the official OCF SDK where possible. The SDK stays aligned with the latest API definition and handles identity token and project secret flows for you.
 </Note>
 
 OCF also provides:
@@ -50,7 +50,7 @@ curl -s -X POST https://dev-api.collectiblesfoundry.com/schemas \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Bird Sighting",
-    "organizationId": "YOUR_ORGANIZATION_ID",
+    "projectId": "YOUR_PROJECT_ID",
     "definition": {
       "properties": {
         "species": { "type": "string" }
@@ -70,7 +70,7 @@ Example response:
   "id": "s1a2b3c4-...",
   "name": "Bird Sighting",
   "version": "1.0.0",
-  "organizationId": "YOUR_ORGANIZATION_ID",
+  "projectId": "YOUR_PROJECT_ID",
   "definition": {
     "properties": {
       "species": { "type": "string" }
@@ -91,7 +91,7 @@ Save the collectible `id`. You will use it when issuing tokens.
 | Field | Required | Description |
 | --- | --- | --- |
 | `name` | Yes | The display name of the collectible. |
-| `issuedByOrgId` | Yes | The organization creating the collectible. |
+| `issuedByProjectId` | Yes | The project creating the collectible. |
 | `description` | No | A short description of the collectible. |
 | `image` | No | An image file for the collectible. |
 | `metadata` | No | Metadata attached to the collectible. |
@@ -103,13 +103,13 @@ Save the collectible `id`. You will use it when issuing tokens.
 
 Before issuing a token to a collector, compute an identity token for that collector.
 
-The identity token is an HMAC-SHA256 digest of the collector's email address, keyed with your organization's `orgSecret`.
+The identity token is an HMAC-SHA256 digest of the collector's email address, keyed with your project's `orgSecret`.
 
 <Warning>
   Keep your `orgSecret` private. Only use it in trusted backend environments.
 </Warning>
 
-This lets OCF verify that the collector belongs to your organization without requiring you to send the collector's email address in plaintext.
+This lets OCF verify that the collector belongs to your project without requiring you to send the collector's email address in plaintext.
 
 <CodeGroup>
 
@@ -174,7 +174,7 @@ Example response:
   "id": "tok-0001-...",
   "collectibleId": "a1b2c3d4-...",
   "collectorId": "...",
-  "issuedBy": "YOUR_ORGANIZATION_ID",
+  "issuedBy": "YOUR_PROJECT_ID",
   "issuedAt": "2026-05-18T12:05:00.000Z"
 }
 ```
