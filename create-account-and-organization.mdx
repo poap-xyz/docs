@@ -1,9 +1,9 @@
 ---
-title: "Create an account and organization"
-description: "Create an OCF Core account, authenticate with the API, and create your first organization."
+title: "Create an account and project"
+description: "Create an OCF Core account, authenticate with the API, and create your first project."
 ---
 
-An organization is the entity that issues collectibles and tokens. Before you can create collectibles, you need an account and at least one organization.
+A project is the entity that issues collectibles and tokens. Before you can create collectibles, you need an account and at least one project.
 
 ## Before you begin
 
@@ -42,18 +42,18 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
   Keep your access token private. Do not expose it in public repositories, frontend code, logs, or shared screenshots.
 </Warning>
 
-## Step 2: Create an organization
+## Step 2: Create a project
 
-Create an organization by sending a `POST` request to `/organizations`.
+Create an project by sending a `POST` request to `/projects`.
 
 ```bash
-curl -X POST https://dev-api.collectiblesfoundry.com/organizations \
+curl -X POST https://dev-api.collectiblesfoundry.com/projects \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Species Spotting Society",
     "slug": "species-spotting-society",
-    "description": "A species spotting organization",
+    "description": "A species spotting project",
     "logoUrl": "https://example.com/logo.jpg",
     "websiteUrl": "https://species-spotting-society.example.com"
   }'
@@ -63,29 +63,29 @@ curl -X POST https://dev-api.collectiblesfoundry.com/organizations \
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `name` | Yes | The display name of the organization. |
-| `slug` | Yes | A URL-friendly identifier for the organization. The slug cannot be changed later. |
-| `description` | No | A short description of the organization. |
-| `logoUrl` | No | A public URL for the organization logo. |
-| `websiteUrl` | No | The organization's website URL. |
+| `name` | Yes | The display name of the project. |
+| `slug` | Yes | A URL-friendly identifier for the project. The slug cannot be changed later. |
+| `description` | No | A short description of the project. |
+| `logoUrl` | No | A public URL for the project logo. |
+| `websiteUrl` | No | The project's website URL. |
 
-## Step 3: Save the organization response
+## Step 3: Save the project response
 
-A successful request returns the organization details.
+A successful request returns the project details.
 
 ```json
 {
   "id": "org_123",
   "name": "Species Spotting Society",
   "slug": "species-spotting-society",
-  "description": "A species spotting organization",
+  "description": "A species spotting project",
   "logoUrl": "https://example.com/logo.jpg",
   "websiteUrl": "https://species-spotting-society.example.com",
   "orgSecret": "YOUR_ORG_SECRET"
 }
 ```
 
-Save the organization `id`. You will use it when creating collectibles and issuing tokens.
+Save the project `id`. You will use it when creating collectibles and issuing tokens.
 
 Also save the `orgSecret`. The `orgSecret` is used to verify collector identities when issuing tokens.
 
