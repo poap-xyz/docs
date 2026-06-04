@@ -1,0 +1,133 @@
+---
+title: "Configure a project channel"
+description: "Configure an organization channel to replicate issued tokens outside OCF Core, such as to a blockchain network."
+---
+
+Projects issue collectibles and tokens inside OCF Core by default.
+
+You can also configure a project channel to replicate issued tokens outside OCF Core, such as to a blockchain network.
+
+A channel can be set in two ways:
+
+1. When you create the project
+2. After the project has already been created
+
+## Before you begin
+
+You will need:
+
+- An OCF Core account
+- An access token
+- A project ID, if updating an existing project
+- A supported channel identifier, such as `ethereum` or `solana`
+
+The examples in this guide use the OCF Core development API:
+
+```bash
+https://dev-api.collectiblesfoundry.com
+```
+
+## How channels work
+
+When a project does not have a channel, its collectibles and tokens exist only in OCF Core.
+
+When a project has a channel, newly issued tokens can be replicated to the channel destination.
+
+<Note>
+  Changing a channel does not backfill previously issued tokens. Tokens issued before the channel was configured will remain unchanged.
+</Note>
+
+## Option 1: Set a channel when creating a project
+
+To create a project with a channel, include the `channel` field in the project creation request.
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/organizations \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Species Spotting Society",
+    "slug": "species-spotting-society",
+    "description": "A species spotting organization",
+    "channel": "ethereum",
+    "logoUrl": "https://example.com/logo.jpg",
+    "websiteUrl": "https://species-spotting-society.example.com"
+  }'
+```
+
+### Request body
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `name` | Yes | The display name of the project. |
+| `slug` | Yes | A URL-friendly identifier for the project. The slug cannot be changed later. |
+| `channel` | No | The destination where newly issued tokens should be replicated. |
+| `description` | No | A short description of the project. |
+| `logoUrl` | No | A public URL for the project logo. |
+| `websiteUrl` | No | The project's website URL. |
+
+Example response:
+
+```json
+{
+  "id": "org_123",
+  "name": "Species Spotting Society",
+  "slug": "species-spotting-society",
+  "description": "A species spotting project",
+  "channel": "ethereum",
+  "logoUrl": "https://example.com/logo.jpg",
+  "websiteUrl": "https://species-spotting-society.example.com",
+  "orgSecret": "YOUR_ORG_SECRET"
+}
+```
+
+Save the project `id`. You will use it when creating collectibles and issuing tokens.
+
+Also save the `orgSecret`. The `orgSecret` is used to verify collector identities when issuing tokens.
+
+<Warning>
+  Treat the `orgSecret` like a password. Do not expose it in frontend code, public repositories, logs, or shared screenshots.
+</Warning>
+
+## Option 2: Set a channel for an existing project
+
+To configure a channel after an project has already been created, send a request to the project's channel endpoint.
+
+```bash
+curl -s -X POST https://dev-api.collectiblesfoundry.com/organizations/YOUR_ORGANIZATION_ID/channels \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "channel": "ethereum"
+  }'
+```
+
+Replace `YOUR_PROJECT_ID` with the ID of the project you want to configure.
+
+After the channel is set, newly issued tokens can be replicated to that channel.
+
+<Note>
+  Previously issued tokens will not be replicated retroactively.
+</Note>
+
+## Optional: Use an AI agent
+
+If you are using an AI agent connected to the OCF Core MCP server, you can configure a channel through natural language.
+
+For a new project:
+
+```text
+Create an organization called "Species Spotting Society" and set its channel to Solana.
+```
+
+For an existing project:
+
+```text
+Set the Solana channel for organization a6ef77b0-30df-4621-8666-eed7a864d25b.
+```
+
+The agent should confirm once the project has been created or the channel has been updated.
+
+## Next step
+
+Create a collectible and issue a token. New tokens issued by this project will use the configured channel.
