@@ -15,7 +15,7 @@
     "pages": [
       "index",
       "quickstart",
-      "create-account-and-organization",
+      "create-account-and-project",
       "configure-a-project-channel",
       "create-collectibles-and-issue-tokens"
     ]
