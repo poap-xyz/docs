@@ -1,0 +1,304 @@
+---
+title: "Overview"
+---
+
+
+
+## What the API does
+
+The OCF Core API provides infrastructure for creating, distributing, and managing digital proof-of-attendance and achievement tokens. It supports the core lifecycle of a collectible credential: creating projects, defining collectible types, issuing tokens to collectors, managing collector identities, and querying issued tokens.
+
+At a high level, the API lets an issuer:
+
+1. Create and manage a project.
+
+2. Define collectible objects that can be issued.
+
+3. Link external users or collectors to account records.
+
+4. Issue one or more tokens to those collectors.
+
+5. Search, count, update, or delete issued tokens.
+
+6. Manage project members, roles, and publisher channels.
+
+7. Authenticate users and support CLI/device-based access.
+
+## Core concepts
+
+### Projects
+
+A project represents an issuing organization, app, brand, or workspace. Projects group together collectibles, members, collector account links, and publisher channel configuration.
+
+Projects include fields such as:
+
+- name
+- slug
+- description
+- logoUrl
+- websiteUrl
+- optional blockchain channel, such as ethereum or solana
+
+Projects also support member management, including inviting users, adding members, updating roles, and removing members.
+
+### Users and members
+
+Users are people with access to the API platform. They can belong to projects as members with roles such as:
+
+- owner
+- admin
+- member
+
+The API supports listing users, creating users, updating users, deleting users, and retrieving the currently authenticated user.
+
+### Account links / collectors
+
+Account links represent collectors in the issuer’s system. They connect the issuer’s own user identifier, called clientUserId, to an internal account link and optionally to a wallet or collector ID.
+
+This lets an issuer issue tokens to users from their own application without requiring every collector to be represented directly as a platform user.
+
+Account links can be searched, counted, retrieved, updated, or deleted.
+
+### Collectibles
+
+A collectible is the thing being issued. It is the template or object that tokens are based on.
+
+For example, a collectible could represent:
+
+- attendance at an event
+- completion of an achievement
+- membership in a group
+- participation in a campaign
+- a badge, credential, or digital memento
+
+Collectibles include fields such as:
+
+- name
+- description
+- imageUrl
+- metadata
+- issuedBy
+- issuedByProjectId
+- schemaId
+- tokenSchemaId
+- externalId
+- tokenCount
+
+The API supports creating, listing, counting, retrieving, updating, and deleting collectibles.
+
+### Tokens
+
+A token is an issued instance of a collectible. If a collectible is the template, the token is the specific copy given to a collector.
+
+Tokens include:
+
+- collectibleId
+- accountLinkId
+- clientUserId
+- issuedBy
+- issuedAt
+- metadata
+- isPrivate
+- publishedAt
+- transactionHash
+- tokenRef
+
+The API supports issuing individual tokens, issuing tokens in batches, searching issued tokens, counting them, updating metadata or privacy, and deleting tokens.
+
+### Schemas
+
+Schemas define structured metadata for collectibles or tokens. They allow issuers to validate and organize metadata consistently.
+
+Schemas can be scoped to a project or personal to a user. They include:
+
+- name
+- version
+- description
+- definition
+- projectId
+
+The API supports creating, listing, counting, retrieving, updating, and deleting schemas.
+
+## Authentication and access
+
+Most API endpoints require bearer token authentication.
+
+The API also includes an OAuth 2.0 device authorization flow. This allows a CLI or device-based application to initiate login, show the user a verification URL, and poll for an access token once authorization is complete.
+
+There is also a macOS CLI installer endpoint that returns a shell script for installing the OCF CLI.
+
+## Main API areas
+
+### Health
+
+The health endpoint provides a simple application health check.
+
+### Auth
+
+The auth endpoints support device-based authorization:
+
+- initiate a device authorization flow
+- poll for a device token
+
+### CLI
+
+The CLI endpoint provides a macOS install script.
+
+### Projects
+
+Project endpoints manage workspaces and issuing organizations. They allow callers to:
+
+- list projects
+- create projects
+- retrieve projects
+- update projects
+- delete projects
+- list the authenticated user’s projects
+- manage project members
+- invite members
+- register publisher channels
+
+### Users
+
+User endpoints manage platform users. They allow callers to:
+
+- create users
+- list users
+- count users
+- retrieve the current user
+- retrieve a user by ID
+- update users
+- delete users
+
+There is also an internal provisioning endpoint for creating users from the identity provider.
+
+### Account links / collectors
+
+Account link endpoints manage collector records. They allow callers to:
+
+- list collectors with filters
+- count collectors
+- retrieve a collector by ID
+- update a collector
+- delete a collector
+
+Collectors can be filtered by project, collectible, or client user ID.
+
+### Collectibles
+
+Collectible endpoints manage the assets or credential types that can be issued. They allow callers to:
+
+- create collectibles
+- list collectibles with filters
+- count collectibles
+- retrieve a collectible
+- update a collectible
+- delete a collectible
+
+Collectibles can be filtered by issuing user, issuing project, schema, account link, creation date, collectible ID, external ID, or metadata.
+
+### Tokens
+
+Token endpoints manage issued collectible instances. They allow callers to:
+
+- issue a token
+- issue multiple tokens
+- issue multiple collectibles to a single collector
+- list tokens with filters
+- count tokens
+- retrieve a token
+- update token metadata or privacy
+- delete a token
+
+Tokens can be filtered by collector, client user ID, issuer, issue date, collectible ID, metadata, token schema, and privacy status.
+
+### Schemas
+
+Schema endpoints manage metadata definitions. They allow callers to:
+
+- create schemas
+- list schemas
+- count schemas
+- retrieve schemas
+- update schema name or description
+- delete schemas
+- Schemas use JTD-style definitions to validate metadata.
+
+## Typical workflows
+
+### Create a project and issue a collectible
+
+A typical issuer flow looks like this:
+
+1. Create a project.
+
+2. Optionally register a publisher channel.
+
+3. Create or select a metadata schema.
+
+4. Create a collectible with a name, image, description, and optional metadata.
+
+5. Identify or create collector account links.
+
+6. Issue tokens to collectors.
+
+7. Search or count tokens to review distribution.
+
+### Issue a token to a known collector
+
+To issue a token, the caller provides:
+
+- the collectibleId
+- the issuer’s clientUserId for the collector
+- an identityToken
+- optional token metadata
+- optional privacy setting
+
+The token is then associated with both the collectible and the collector/account link.
+
+### Batch issue tokens
+
+The API supports two batch patterns:
+
+1. Issue multiple collectibles to a single collector.
+
+2. Issue one or more collectibles to multiple collectors.
+
+Batch endpoints return both successful issues and failed items, allowing partial success handling.
+
+### Query token distribution
+
+The token search and count endpoints let issuers analyze distribution by:
+
+- collectible
+- collector
+- issuer
+- date range
+- metadata
+- privacy status
+
+This is useful for dashboards, reporting, user-facing inventories, and operational review.
+
+## MCP tool metadata
+
+Several endpoints include x-mcp metadata. This appears to expose API operations as named tools for an MCP-compatible interface.
+
+Examples include:
+
+- list\_collectors
+- count\_collectors
+- get\_collector
+- list\_projects
+- create\_project
+- list\_collectibles
+- issue\_token
+- batch\_issue\_tokens
+- list\_tokens
+
+This makes the API suitable not only for traditional client integrations, but also for tool-calling agents or CLI-style workflows.
+
+## In summary
+
+The OCF Core API is a platform API for issuing and managing collectible digital tokens. It combines project management, user and member management, collector identity linking, collectible creation, structured metadata schemas, and token issuance.
+
+Its main purpose is to let applications and organizations create proof-of-attendance, achievement, or credential-style collectibles and issue them to users in a structured, searchable, and programmable way.
