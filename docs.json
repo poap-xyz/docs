@@ -15,11 +15,10 @@
     "pages": [
       "index",
       "quickstart",
+      "introduction",
       "create-account-and-project",
       "configure-a-project-channel",
-      "create-collectibles-and-issue-tokens",
-      "introduction",
-      "untitled-page"
+      "create-collectibles-and-issue-tokens"
     ]
   },
   "logo": {
